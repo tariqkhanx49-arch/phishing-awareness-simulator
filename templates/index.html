@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PhishAware is an educational phishing awareness simulator.">
+    <title>PhishAware | Security Awareness</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="topbar">
+        <a class="brand" href="#home">
+            <span class="brand-mark">P</span>
+            <span>
+                PhishAware
+                <small>SECURITY AWARENESS LAB</small>
+            </span>
+        </a>
+
+        <nav>
+            <a href="#home">Dashboard</a>
+            <a href="#examples">Email Examples</a>
+            <a href="#quiz">Assessment</a>
+        </nav>
+    </header>
+
+    <main id="home" class="container">
+
+        <section class="hero">
+            <div class="hero-copy">
+                <span class="eyebrow">CYBERSECURITY EDUCATION</span>
+
+                <h1>Think before you <span>click.</span></h1>
+
+                <p>
+                    Learn to recognize suspicious messages, understand
+                    common warning signs, and make safer decisions online.
+                </p>
+
+                <a class="button primary" href="#examples">
+                    Explore Examples
+                </a>
+
+                <a class="button secondary" href="#quiz">
+                    Take the Assessment
+                </a>
+            </div>
+
+            <div class="hero-panel">
+                <div class="shield">✓</div>
+
+                <p class="panel-label">YOUR SECURITY CHECKLIST</p>
+
+                <div class="check-item">
+                    <span>01</span> Check the sender
+                </div>
+
+                <div class="check-item">
+                    <span>02</span> Inspect unexpected requests
+                </div>
+
+                <div class="check-item">
+                    <span>03</span> Verify links independently
+                </div>
+
+                <div class="check-item">
+                    <span>04</span> Report suspicious messages
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-grid" aria-label="Project overview">
+
+            <article class="stat-card">
+                <span class="stat-icon">01</span>
+                <p>Training Examples</p>
+                <h2>{{ emails|length }}</h2>
+                <small>Fictional sample messages</small>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon">02</span>
+                <p>Assessment Questions</p>
+                <h2>{{ questions|length }}</h2>
+                <small>Knowledge-check questions</small>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon">03</span>
+                <p>Learning Focus</p>
+                <h2>Awareness</h2>
+                <small>Safer online decisions</small>
+            </article>
+
+        </section>
+
+        <section id="examples" class="section">
+
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">LEARN TO IDENTIFY RISKS</span>
+                    <h2>Training Email Examples</h2>
+                </div>
+
+                <p>
+                    Review each fictional example and learn what to check.
+                </p>
+            </div>
+
+            <div class="email-grid">
+
+                {% for email in emails %}
+                <article class="email-card">
+
+                    <div class="email-top">
+                        <span class="mail-symbol">✉</span>
+
+                        <span class="status {% if email.verdict == 'Suspicious' %}danger{% else %}caution{% endif %}">
+                            {{ email.verdict }}
+                        </span>
+                    </div>
+
+                    <h3>{{ email.title }}</h3>
+
+                    <p class="sender">
+                        <strong>From:</strong> {{ email.sender }}
+                    </p>
+
+                    <p class="email-message">
+                        {{ email.message }}
+                    </p>
+
+                    <div class="warning-box">
+                        <strong>What to notice</strong>
+                        <p>{{ email.warning }}</p>
+                    </div>
+
+                </article>
+                {% endfor %}
+
+            </div>
+
+            <p class="notice">
+                These are fictional training examples, not live email
+                messages. Always verify suspicious requests independently.
+            </p>
+
+        </section>
+
+        <section id="quiz" class="section quiz-section">
+
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">TEST YOUR KNOWLEDGE</span>
+                    <h2>Phishing Awareness Assessment</h2>
+                </div>
+
+                <p>
+                    Choose one answer for every question and submit
+                    your assessment.
+                </p>
+            </div>
+
+            {% if result %}
+
+            <section class="result-card" aria-live="polite">
+
+                <span class="eyebrow">ASSESSMENT COMPLETE</span>
+
+                <h2>{{ result.percentage }}%</h2>
+
+                <p>
+                    You scored {{ result.score }} out of {{ result.total }}.
+                </p>
+
+                {% if result.percentage >= 80 %}
+                    <p class="result-message">
+                        Good work! Keep applying these security habits.
+                    </p>
+                {% else %}
+                    <p class="result-message">
+                        Review the explanations below and try again.
+                    </p>
+                {% endif %}
+
+            </section>
+
+            <div class="review-list">
+
+                <h3>Answer Review</h3>
+
+                {% for answer in result.answers %}
+                <article class="review-item">
+
+                    <span class="review-status {% if answer.correct %}correct{% else %}incorrect{% endif %}">
+                        {% if answer.correct %}
+                            Correct
+                        {% else %}
+                            Review
+                        {% endif %}
+                    </span>
+
+                    <h4>
+                        {{ loop.index }}. {{ answer.question }}
+                    </h4>
+
+                    <p>
+                        <strong>Your answer:</strong>
+                        {{ answer.selected_text }}
+                    </p>
+
+                    <p>
+                        <strong>Correct answer:</strong>
+                        {{ answer.correct_answer }}
+                    </p>
+
+                    <p>{{ answer.explanation }}</p>
+
+                </article>
+                {% endfor %}
+
+                <a class="button secondary" href="#quiz">
+                    Try Again
+                </a>
+
+            </div>
+
+            {% endif %}
+
+            <form
+                method="POST"
+                action="{{ url_for('home') }}"
+                class="quiz-form"
+            >
+
+                {% for question in questions %}
+                {% set question_index = loop.index0 %}
+
+                <fieldset class="question-card">
+
+                    <legend>
+                        <span class="question-number">
+                            QUESTION {{ loop.index }}
+                        </span>
+
+                        {{ question.question }}
+                    </legend>
+
+                    {% for option in question.options %}
+
+                    <label class="option">
+
+                        <input
+                            type="radio"
+                            name="q{{ question_index }}"
+                            value="{{ loop.index0 }}"
+                            required
+                        >
+
+                        <span>{{ option }}</span>
+
+                    </label>
+
+                    {% endfor %}
+
+                </fieldset>
+
+                {% endfor %}
+
+                <button
+                    class="button primary submit-button"
+                    type="submit"
+                >
+                    Submit Assessment
+                </button>
+
+            </form>
+
+        </section>
+
+        <section class="bottom-note">
+            <h2>Stay alert. Stay informed.</h2>
+
+            <p>
+                When in doubt, don't click. Verify unexpected requests
+                through a trusted channel and follow your organization's
+                security reporting process.
+            </p>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>PhishAware · Educational Cybersecurity Project</p>
+        <p>Built with Python, Flask, HTML and CSS</p>
+    </footer>
+
+</body>
+</html>
